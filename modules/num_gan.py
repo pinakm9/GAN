@@ -119,8 +119,8 @@ class NumGAN:
 
             # check the model every few epochs
             if (epoch + 1) % gap == 0:
-                print ('Time for epoch {} is {:.3f} sec, gen loss = {}, disc loss = {}'\
-                    .format(epoch + 1, time.time()-start, gen_loss.numpy(), disc_loss.numpy()), end="\r")
+                print ('\rTime for epoch {} is {:.3f} sec, gen loss = {}, disc loss = {}'\
+                    .format(epoch + 1, time.time()-start, gen_loss.numpy(), disc_loss.numpy()), end="")
                 self.generate_and_save_images(batch, epoch=epoch + 1)
 
         self.make_gif()
@@ -260,8 +260,8 @@ class NumCompleter:
             #self.noise = tf.clip_by_value(self.noise, -1, 1)
             # Save the model every few epochs
             if (epoch + 1) % gap == 0:
-                print ('Time for epoch {} is {:.3f} sec, total loss = {:.3f}'\
-                      .format(epoch + 1, time.time()-start, total_loss.numpy()), end='\r')
+                print ('\rTime for epoch {} is {:.3f} sec, total loss = {:.3f}'\
+                      .format(epoch + 1, time.time()-start, total_loss.numpy()), end='')
                 #if np.isnan(total_loss.numpy()):
                 #    print(self.noise, '***********\n', self.complete_loss(data, self.noise))
                 self.save()
