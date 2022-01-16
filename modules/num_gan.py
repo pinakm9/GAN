@@ -261,7 +261,7 @@ class NumCompleter:
             # Save the model every few epochs
             if (epoch + 1) % gap == 0:
                 print ('Time for epoch {} is {:.3f} sec, total loss = {:.3f}'\
-                      .format(epoch + 1, time.time()-start, total_loss.numpy()), end='\n')
+                      .format(epoch + 1, time.time()-start, total_loss.numpy()))
                 #if np.isnan(total_loss.numpy()):
                 #    print(self.noise, '***********\n', self.complete_loss(data, self.noise))
                 self.save()
