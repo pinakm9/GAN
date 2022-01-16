@@ -107,9 +107,9 @@ class NumGAN:
 
     
     
-    def train(self, dataset, epochs, gap=100):
-        self.generator_optimizer = tf.keras.optimizers.RMSprop(1e-3)
-        self.discriminator_optimizer = tf.keras.optimizers.RMSprop(1e-3)
+    def train(self, dataset, epochs, gap=100, learning_rate=1e-4):
+        self.generator_optimizer = tf.keras.optimizers.RMSprop(learning_rate)
+        self.discriminator_optimizer = tf.keras.optimizers.RMSprop(learning_rate)
 
         for epoch in range(epochs):
             start = time.time()
@@ -119,7 +119,7 @@ class NumGAN:
 
             # check the model every few epochs
             if (epoch + 1) % gap == 0:
-                print ('Time for epoch {} is {} sec, gen loss = {}, disc loss = {}'\
+                print ('Time for epoch {} is {:.3f} sec, gen loss = {}, disc loss = {}'\
                     .format(epoch + 1, time.time()-start, gen_loss.numpy(), disc_loss.numpy()), end="\r")
                 self.generate_and_save_images(batch, epoch=epoch + 1)
 
@@ -216,7 +216,7 @@ class NumCompleter:
 
 
     def perceptual_loss(self, fake_output):
-        return tf.math.log(1-fake_output)
+        return self.gan.generator_loss(fake_output)
     
     def complete_loss(self, samples, noise):
         generated_samples = self.gan.generator(self.noise, training=True)
@@ -224,7 +224,7 @@ class NumCompleter:
 
         perc_loss = self.perceptual_loss(fake_output)
         cont_loss = self.contextual_loss(samples, generated_samples)
-        return tf.reduce_mean(self.lam * perc_loss + cont_loss)
+        return tf.reduce_mean(cont_loss + self.lam * perc_loss)
 
     @tf.function
     def train_step(self, samples):
@@ -240,14 +240,14 @@ class NumCompleter:
         return total_loss
 
 
-    def train(self, data, epochs, gap=100):
-        momentum, lr = 0.9, 1e-4
-        lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(initial_learning_rate=1e-3,\
-                                decay_steps=10000, decay_rate=0.9)
+    def train(self, data, epochs, gap=100, learning_rate=1e-4):
+        #momentum, lr = 0.9, 1e-4
+        #lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(initial_learning_rate=1e-3,\
+        #                        decay_steps=10000, decay_rate=0.9)
 
-        self.optimizer = tf.keras.optimizers.SGD(1e-3)
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate)
         if not hasattr(self, 'noise'):
-            self.noise = tf.Variable(tf.random.uniform([data.shape[0], self.gan.noise_dim], -1, 1), trainable=True)
+            self.noise = tf.Variable(tf.random.normal([data.shape[0], self.gan.noise_dim]), trainable=True)
         #"""
         v = 0
         for epoch in range(epochs):
@@ -260,9 +260,10 @@ class NumCompleter:
             #self.noise = tf.clip_by_value(self.noise, -1, 1)
             # Save the model every few epochs
             if (epoch + 1) % gap == 0:
-                print ('Time for epoch {} is {} sec, total loss = {:.3f}'\
+                print ('Time for epoch {} is {:.3f} sec, total loss = {:.3f}'\
                       .format(epoch + 1, time.time()-start, total_loss.numpy()), end='\r')
-                #print(v, v_prev, end='\r')
+                #if np.isnan(total_loss.numpy()):
+                #    print(self.noise, '***********\n', self.complete_loss(data, self.noise))
                 self.save()
         #"""
         loss = lambda: self.complete_loss(data, self.noise)
