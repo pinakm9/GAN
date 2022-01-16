@@ -119,8 +119,8 @@ class NumGAN:
 
             # check the model every few epochs
             if (epoch + 1) % gap == 0:
-                print ('\rTime for epoch {} is {:.3f} sec, gen loss = {}, disc loss = {}'\
-                    .format(epoch + 1, time.time()-start, gen_loss.numpy(), disc_loss.numpy()), end="")
+                print ('Time for epoch {} is {:.3f} sec, gen loss = {}, disc loss = {}'\
+                    .format(epoch + 1, time.time()-start, gen_loss.numpy(), disc_loss.numpy()), end='\r')
                 self.generate_and_save_images(batch, epoch=epoch + 1)
 
         self.make_gif()
@@ -240,12 +240,12 @@ class NumCompleter:
         return total_loss
 
 
-    def train(self, data, epochs, gap=100, learning_rate=1e-4):
+    def train(self, data, epochs, gap=100, learning_rate=tf.keras.optimizers.schedules.ExponentialDecay(initial_learning_rate=1e-3,\
+                                decay_steps=10000, decay_rate=0.9)):
         #momentum, lr = 0.9, 1e-4
-        #lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(initial_learning_rate=1e-3,\
-        #                        decay_steps=10000, decay_rate=0.9)
+        #lr_schedule = 
 
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate)
+        self.optimizer = tf.keras.optimizers.RMSprop(learning_rate)
         if not hasattr(self, 'noise'):
             self.noise = tf.Variable(tf.random.normal([data.shape[0], self.gan.noise_dim]), trainable=True)
         #"""
@@ -261,7 +261,7 @@ class NumCompleter:
             # Save the model every few epochs
             if (epoch + 1) % gap == 0:
                 print ('Time for epoch {} is {:.3f} sec, total loss = {:.3f}'\
-                      .format(epoch + 1, time.time()-start, total_loss.numpy()))
+                      .format(epoch + 1, time.time()-start, total_loss.numpy()), end='\r')
                 #if np.isnan(total_loss.numpy()):
                 #    print(self.noise, '***********\n', self.complete_loss(data, self.noise))
                 self.save()
